@@ -44,27 +44,25 @@ async function getConnectionObj(instanceUrl,sessionId){
 }
 
 function printTestResult(testResult){
-    console.log('-------------------------------');
     console.log(`Test Result for ${testResult.testClassName}`);
-    console.log('-------------');
-    console.log(`${testResult.testClassName} Successful Test Methods : `);
-    console.log(testResult.successes);
-    console.log('-------------');
-    console.log(`${testResult.testClassName} Failure Test Methods : `);
-    console.log(testResult.failures);
-    console.log('-------------');
-    console.log(`${testResult.testClassName} Number of Failures : `);
-    console.log(testResult.numFailures);
-    console.log('-------------');
+    console.table([
+        { 'Successful Test Methods': testResult.successes.join(', ') }
+    ])
 
-    if(testResult.codeCoverage.length !== 0){
-        console.log(`${testResult.testClassName} Code Coverage :\n`);
-        testResult.codeCoverage.forEach(coverage => {
-            console.log(`Class Name : ${coverage.className}`);
-            console.log(`Code Coverage Percentage : ${coverage.codeCoveragePercentage}\n`);
-        });
-    }
+    console.table([
+        { 
+            'Failure Test Methods': testResult.failures.join(', '),
+            'Number of Failures': testResult.numFailures 
+        }
+    ])
 
+    console.log(`Code Coverage for ${testResult.testClassName}`);
+    console.table(testResult.codeCoverage.map(coverage => {
+        return {
+            'Class Name': coverage.className,
+            'Code Coverage Percentage': coverage.codeCoveragePercentage
+        }
+    }));
     console.log(`Test Result for ${testResult.testClassName} Complete\n`);
 }
 
@@ -117,18 +115,16 @@ async function main(testMap,instanceUrl,sessionId){
         testResultFailures.push(testResultFailure);
     }
 
-    console.log('------------TEST RESULT FAILURES -------------');
-    testResultFailures.forEach(testResultFailure => {
-        console.log(`Test Class Name : ${testResultFailure.testClassName}`);
-        console.log('-------------');
-        console.log('Failures : ');
-        console.log(testResultFailure.failures);
-        console.log('-------------');
-        console.log('Low Code Coverage Classes : ');
-        console.log(testResultFailure.lowCodeCoverage);
-        console.log('-------------');
-    });
+    console.log('LIST OF TEST RESULT FAILURES')
+    console.table(testResultFailures.map(testResultFailure => {
+        return {
+            'Test Class Name': testResultFailure.testClassName,
+            'Failures': testResultFailure.failures.join(', '),
+            'Low Code Coverage Classes': testResultFailure.lowCodeCoverage.join(', ')
+        }
+    }))
 }
+
 ```
 Running the script 
 ```
