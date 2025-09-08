@@ -27,6 +27,7 @@ async function getConnectionObj(instanceUrl,sessionId){
 
   - [Running Test Classes and retrieving respective Code Coverage for particular apex classes](#running-test-classes-and-retrieving-respective-code-coverage-for-particular-apex-classes)
   - [Inserting a field in multiple List Views of a certain Object at a certain position](#inserting-a-field-in-multiple-list-views-of-a-certain-object-at-a-certain-position)
+  - [Update Default External Access of list of Objects using jsForce](#update-default-external-access-of-list-of-objects-using-jsforce)
 </details>
 
 ## Running Test Classes and retrieving respective Code Coverage for particular apex classes
@@ -325,3 +326,52 @@ main(sobjectApiName,fieldApiName,fieldPosition,instanceUrl,sessionId);
 ```
   
 Change the ListView Query or provide the list view developer names yourself as per your requirement.  
+
+## Update Default External Access of list of Objects using jsForce
+[Back to main](#scripts)
+
+```
+var jsforce = require('jsforce');
+
+async function getConnectionObj(instanceUrl,sessionId){
+    const conn = new jsforce.Connection({
+        instanceUrl: instanceUrl,
+        serverUrl: instanceUrl,
+        sessionId: sessionId
+    })
+    return conn;
+}
+
+async function main(instanceUrl,sessionId,customObjects){
+    var conn = await getConnectionObj(instanceUrl,sessionId);
+
+    var metadataChunks = returnChunkArr(customObjects,10);
+    
+    for(let index = 0;index < metadataChunks.length; index++){
+        var chunk = metadataChunks[index];
+        var metadataResult = await conn.metadata.read('CustomObject',chunk);
+        metadataResult.forEach(metadataObject => {
+            metadataObject.externalSharingModel = 'Private';
+        })
+
+        var updateResult = await conn.metadata.update('CustomObject',metadataResult);
+        console.dir(updateResult,{depth:null});
+    }
+}
+
+function returnChunkArr(zipcodeArr,chunkSize){
+    var result = [];
+    var i = 0;
+    while(i < zipcodeArr.length){
+        result.push(zipcodeArr.slice(i,i + chunkSize));
+        i += chunkSize;
+    }
+    return result;
+}
+
+
+var instanceUrl = 'INSTANCE_URL';
+var sessionId = 'SESSION_ID';
+var customObjects = [/*LIST OF CUSTOM OBJECTS*/];
+main(instanceUrl,sessionId,customObjects);
+```
